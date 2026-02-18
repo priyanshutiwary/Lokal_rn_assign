@@ -1,61 +1,61 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import React, { useMemo, useState } from 'react';
-import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import React, { useMemo, useState, useEffect } from 'react';
+import { FlatList, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { ArtistOptionsModal } from '@/components/ui/artist-options-modal';
 import { ArtistListItem } from '@/components/ui/artist-list-item';
 import { SortMenu, SortOption } from '@/components/ui/sort-menu';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
-
-interface Artist {
-    id: string;
-    name: string;
-    image: string;
-    albumCount: number;
-    songCount: number;
-    dateAdded: string; // for sorting
-}
-
-// Mock Data matching the image provided by user
-const ARTISTS_DATA: Artist[] = [
-    { id: '1', name: 'Ariana Grande', image: 'https://upload.wikimedia.org/wikipedia/en/e/e1/Ariana_Grande_-_Dangerous_Woman_live.jpg', albumCount: 1, songCount: 20, dateAdded: '2023-01-01' },
-    { id: '2', name: 'The Weeknd', image: 'https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png', albumCount: 1, songCount: 16, dateAdded: '2023-01-02' },
-    { id: '3', name: 'Acidrap', image: 'https://upload.wikimedia.org/wikipedia/en/2/2b/Acid_Rap.jpg', albumCount: 2, songCount: 28, dateAdded: '2023-01-03' },
-    { id: '4', name: 'Ania Szarmarch', image: 'https://i.scdn.co/image/ab67616d0000b273d2890656041ec35222055106', albumCount: 1, songCount: 12, dateAdded: '2023-01-04' },
-    { id: '5', name: 'Troye Sivan', image: 'https://upload.wikimedia.org/wikipedia/en/7/76/Blue_Neighbourhood.png', albumCount: 1, songCount: 14, dateAdded: '2023-01-05' },
-    { id: '6', name: 'Ryan Jones', image: 'https://i.scdn.co/image/ab67616d0000b273ac6b1947e09623812895669f', albumCount: 2, songCount: 24, dateAdded: '2023-01-06' },
-];
+import { useMusicStore } from '@/store/music-store';
+import { getImageUrl } from '../../services/api';
 
 export function ArtistsTab() {
     const colorScheme = useColorScheme() ?? 'light';
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { artists, isLoading, fetchArtists } = useMusicStore();
     const [sortOption, setSortOption] = useState<SortOption>('Date Added');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
     const [isAscending, setIsAscending] = useState(false);
     const [optionsModalVisible, setOptionsModalVisible] = useState(false);
-    const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+    const [selectedArtist, setSelectedArtist] = useState<any>(null);
 
-    const handleMorePress = (artist: Artist) => {
-        setSelectedArtist(artist);
+    useEffect(() => {
+        if (artists.length === 0) {
+            fetchArtists('bollywood');
+        }
+    }, []);
+
+    const handleMorePress = (artist: any) => {
+        setSelectedArtist({
+            id: artist.id,
+            name: artist.name,
+            image: getImageUrl(artist.image, '500x500'),
+            albumCount: artist.topAlbums?.length || 0,
+            songCount: artist.topSongs?.length || 0
+        });
         setOptionsModalVisible(true);
     };
 
-    const handleArtistPress = (artist: Artist) => {
-        navigation.navigate('ArtistDetail', { artist });
+    const handleArtistPress = (artist: any) => {
+        navigation.navigate('ArtistDetail', { 
+            artist: {
+                id: artist.id,
+                name: artist.name,
+                image: getImageUrl(artist.image, '500x500'),
+                albumCount: artist.topAlbums?.length || 0,
+                songCount: artist.topSongs?.length || 0
+            }
+        });
     };
 
     const sortedData = useMemo(() => {
-        let data = [...ARTISTS_DATA];
+        let data = [...artists];
 
-        // Basic sorting logic based on the selected option
         data.sort((a, b) => {
             switch (sortOption) {
-                case 'Date Added':
-                    // Mock date sorting
-                    return a.dateAdded.localeCompare(b.dateAdded);
-                case 'Artist': // Sort by Name
+                case 'Artist':
                 case 'Ascending':
                     return a.name.localeCompare(b.name);
                 case 'Descending':
@@ -66,14 +66,22 @@ export function ArtistsTab() {
         });
 
         return data;
-    }, [sortOption, isAscending]);
+    }, [artists, sortOption, isAscending]);
+
+    if (isLoading && artists.length === 0) {
+        return (
+            <View className="flex-1 items-center justify-center">
+                <ActivityIndicator size="large" color="#FF9500" />
+            </View>
+        );
+    }
 
     return (
         <View className="flex-1">
 
             <View className="flex-row justify-between items-center px-5 mt-4 mb-4">
                 <Text className={`text-xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                    {ARTISTS_DATA.length} artists
+                    {sortedData.length} artists
                 </Text>
                 <TouchableOpacity className="flex-row items-center gap-2" onPress={() => setSortMenuVisible(true)}>
                     <Text className="text-base font-bold text-[#FF9500]">
@@ -91,7 +99,11 @@ export function ArtistsTab() {
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <ArtistListItem
-                        {...item}
+                        id={item.id}
+                        name={item.name}
+                        image={getImageUrl(item.image, '150x150')}
+                        albumCount={item.topAlbums?.length || 0}
+                        songCount={item.topSongs?.length || 0}
                         onMore={() => handleMorePress(item)}
                         onPress={() => handleArtistPress(item)}
                     />

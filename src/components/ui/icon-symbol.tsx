@@ -21,6 +21,7 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'play.fill': 'play-arrow',
+  'pause.fill': 'pause',
   'ellipsis': 'more-horiz',
   'more.vertical': 'more-vert',
   'arrow.up.arrow.down': 'swap-vert',
@@ -35,6 +36,17 @@ const MAPPING = {
   'gear': 'settings',
   'music.note': 'music-note',
   'magnifyingglass': 'search',
+  'chevron.left': 'chevron-left',
+  'chevron.up': 'keyboard-arrow-up',
+  'chevron.down': 'keyboard-arrow-down',
+  'backward.fill': 'skip-previous',
+  'forward.fill': 'skip-next',
+  'gobackward.10': 'replay-10',
+  'goforward.10': 'forward-10',
+  'shuffle': 'shuffle',
+  'repeat': 'repeat',
+  'repeat.1': 'repeat-one',
+  'airplayaudio': 'cast',
 } as IconMapping;
 
 /**

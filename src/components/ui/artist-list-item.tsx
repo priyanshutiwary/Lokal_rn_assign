@@ -34,9 +34,18 @@ export function ArtistListItem({
                 <Text className={`text-lg font-bold mb-1 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>
                     {name}
                 </Text>
-                <Text className="text-sm text-gray-500 font-medium" numberOfLines={1}>
-                    {albumCount} {albumCount === 1 ? 'Album' : 'Albums'}  |  {songCount} {songCount === 1 ? 'Song' : 'Songs'}
-                </Text>
+                {(albumCount > 0 || songCount > 0) && (
+                    <Text className="text-sm text-gray-500 font-medium" numberOfLines={1}>
+                        {albumCount > 0 && `${albumCount} ${albumCount === 1 ? 'Album' : 'Albums'}`}
+                        {albumCount > 0 && songCount > 0 && '  |  '}
+                        {songCount > 0 && `${songCount} ${songCount === 1 ? 'Song' : 'Songs'}`}
+                    </Text>
+                )}
+                {albumCount === 0 && songCount === 0 && (
+                    <Text className="text-sm text-gray-500 font-medium" numberOfLines={1}>
+                        Artist
+                    </Text>
+                )}
             </View>
 
             <TouchableOpacity onPress={onMore} className="p-1">

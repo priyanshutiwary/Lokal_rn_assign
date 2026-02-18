@@ -9,11 +9,14 @@ import SettingsScreen from '@/screens/settings-screen';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import type { TabParamList } from './types';
+import { TAB_BAR_HEIGHT, MINI_PLAYER_HEIGHT } from './root-navigator';
+import { usePlayerStore } from '@/store/player-store';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export function TabNavigator() {
   const colorScheme = useColorScheme();
+  const { currentSong } = usePlayerStore();
 
   return (
     <Tab.Navigator
@@ -32,13 +35,17 @@ export function TabNavigator() {
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
           shadowRadius: 10,
-          height: 90,
+          height: TAB_BAR_HEIGHT,
           paddingTop: 10,
           paddingBottom: 30, // Adjust for iPhone home indicator
           position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
+        },
+        // Add safe area for content to not go under tab bar + mini player (only when song is playing)
+        sceneStyle: {
+          paddingBottom: currentSong ? TAB_BAR_HEIGHT + MINI_PLAYER_HEIGHT : TAB_BAR_HEIGHT,
         }
       }}>
       <Tab.Screen

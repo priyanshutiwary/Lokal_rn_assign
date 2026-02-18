@@ -48,11 +48,13 @@ export function AlbumGridItem({
                         {title}
                     </Text>
                     <Text className="text-sm text-gray-500 mb-1" numberOfLines={1}>
-                        {artist} | {year}
+                        {artist}{year && ` | ${year}`}
                     </Text>
-                    <Text className="text-sm text-gray-500" numberOfLines={1}>
-                        {songCount} {songCount === 1 ? 'song' : 'songs'}
-                    </Text>
+                    {songCount > 0 && (
+                        <Text className="text-sm text-gray-500" numberOfLines={1}>
+                            {songCount} {songCount === 1 ? 'song' : 'songs'}
+                        </Text>
+                    )}
                 </View>
 
                 <TouchableOpacity onPress={onMore} hitSlop={10}>

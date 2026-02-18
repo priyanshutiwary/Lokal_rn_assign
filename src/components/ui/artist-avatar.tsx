@@ -15,8 +15,8 @@ export function ArtistAvatar({ image, name }: ArtistAvatarProps) {
     const themeColors = Colors[colorScheme];
 
     return (
-        <View className="items-center mr-4 w-[100px]">
-            <Image source={{ uri: image }} className="w-[120px] h-[120px] rounded-full mb-2" />
+        <View className="items-center mr-4 w-[120px]">
+            <Image source={{ uri: image }} className="w-[100px] h-[100px] rounded-full mb-2" />
             <Text className={`text-sm font-semibold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>
                 {name}
             </Text>

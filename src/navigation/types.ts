@@ -22,6 +22,8 @@ export type RootStackParamList = {
       image: string;
     };
   };
+  Search: undefined;
+  Player: undefined;
 };
 
 export type TabParamList = {
