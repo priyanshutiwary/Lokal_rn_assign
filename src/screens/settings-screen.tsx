@@ -1,10 +1,10 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useThemeStore } from '@/store/theme-store';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { IconSymbol } from '../components/ui/icon-symbol';
 
 export default function SettingsScreen() {
     const colorScheme = useColorScheme() ?? 'light';
@@ -13,17 +13,15 @@ export default function SettingsScreen() {
 
     const renderThemeOption = (label: string, value: 'light' | 'dark' | 'system') => (
         <TouchableOpacity
-            style={[
-                styles.optionRow,
-                {
-                    backgroundColor: themeColors.cardBackground,
-                    borderColor: theme === value ? themeColors.tint : 'transparent',
-                    borderWidth: 1
-                }
-            ]}
+            className={`flex-row items-center justify-between p-4 rounded-xl border ${
+                theme === value ? 'border-[#FF9500]' : 'border-transparent'
+            }`}
+            style={{ backgroundColor: themeColors.cardBackground }}
             onPress={() => setTheme(value)}
         >
-            <Text style={[styles.optionText, { color: themeColors.text }]}>{label}</Text>
+            <Text className={colorScheme === 'dark' ? 'text-white text-[17px]' : 'text-black text-[17px]'}>
+                {label}
+            </Text>
             {theme === value && (
                 <IconSymbol name="checkmark" size={20} color={themeColors.tint} />
             )}
@@ -31,13 +29,17 @@ export default function SettingsScreen() {
     );
 
     return (
-        <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
-            <ScrollView contentContainerStyle={styles.content}>
-                <Text style={[styles.headerTitle, { color: themeColors.text }]}>Settings</Text>
+        <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+            <ScrollView contentContainerClassName="p-5">
+                <Text className={`text-[34px] font-bold mb-5 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    Settings
+                </Text>
 
-                <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, { color: themeColors.icon }]}>APPEARANCE</Text>
-                    <View style={styles.optionsContainer}>
+                <View className="mb-7">
+                    <Text className="text-[13px] font-semibold mb-2.5 ml-1 uppercase text-gray-500">
+                        APPEARANCE
+                    </Text>
+                    <View className="gap-2.5">
                         {renderThemeOption('Light', 'light')}
                         {renderThemeOption('Dark', 'dark')}
                         {renderThemeOption('System', 'system')}
@@ -47,41 +49,3 @@ export default function SettingsScreen() {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    content: {
-        padding: 20,
-    },
-    headerTitle: {
-        fontSize: 34,
-        fontWeight: 'bold',
-        marginBottom: 20,
-    },
-    section: {
-        marginBottom: 30,
-    },
-    sectionTitle: {
-        fontSize: 13,
-        fontWeight: '600',
-        marginBottom: 10,
-        marginLeft: 4,
-        textTransform: 'uppercase',
-    },
-    optionsContainer: {
-        gap: 10,
-    },
-    optionRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 16,
-        borderRadius: 12,
-    },
-    optionText: {
-        fontSize: 17,
-        fontWeight: '400',
-    },
-});

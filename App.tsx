@@ -1,10 +1,15 @@
-import React, { useEffect } from 'react';
-import { NavigationContainer, DarkTheme, DefaultTheme } from '@react-navigation/native';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-import 'react-native-reanimated';
+import { StatusBar } from 'expo-status-bar';
+import React, { useEffect } from 'react';
 import 'react-native-gesture-handler';
+import 'react-native-reanimated';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import './global.css';
+import { cssInterop } from "nativewind";
+import { Image } from "expo-image";
+
+cssInterop(Image, { className: "style" });
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RootNavigator } from '@/navigation/root-navigator';

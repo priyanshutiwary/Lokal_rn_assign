@@ -23,6 +23,7 @@
         "./assets/*"
       ],
       "@/components/*": [
+        "./src/components/*",
         "./components/*"
       ],
       "@/constants/*": [
@@ -31,10 +32,12 @@
       "@/hooks/*": [
         "./hooks/*"
       ]
-    }
+    },
+    
   },
   "include": [
     "**/*.ts",
-    "**/*.tsx"
+    "**/*.tsx",
+    "nativewind-env.d.ts"
   ]
 }

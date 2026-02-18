@@ -14,12 +14,24 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
+  // See MaterialIcons here: https://icons.expo.fyi
+  // SF Symbol -> MaterialIcon
   'house.fill': 'home',
+  'house': 'home',
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
+  'play.fill': 'play-arrow',
+  'ellipsis': 'more-horiz',
+  'more.vertical': 'more-vert',
+  'arrow.up.arrow.down': 'swap-vert',
+  'square.and.arrow.up': 'ios-share',
+  'arrow.right.circle': 'arrow-circle-right',
+  'text.badge.plus': 'playlist-add',
+  'plus.circle': 'add-circle-outline',
+  'play.circle': 'play-circle-outline',
   'heart.fill': 'favorite',
-  'music.note.list': 'queue-music',
+  'heart': 'favorite-border',
+  'music.note.list': 'description',
   'gear': 'settings',
   'music.note': 'music-note',
   'magnifyingglass': 'search',

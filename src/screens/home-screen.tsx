@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { SectionHeader } from '@/components/ui/section-header';
-import { HorizontalCard } from '@/components/ui/horizontal-card';
-import { ArtistAvatar } from '@/components/ui/artist-avatar';
-import { SongsTab } from './home-tabs/songs-tab';
-import { ArtistsTab } from './home-tabs/artists-tab';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-const { width } = Dimensions.get('window');
+import { ArtistAvatar } from '@/components/ui/artist-avatar';
+import { HorizontalCard } from '@/components/ui/horizontal-card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { SectionHeader } from '@/components/ui/section-header';
+import { AlbumsTab } from './home-tabs/albums-tab';
+import { ArtistsTab } from './home-tabs/artists-tab';
+import { SongsTab } from './home-tabs/songs-tab';
 
 const TABS = ['Suggested', 'Songs', 'Artists', 'Albums', 'Folders'];
 
@@ -43,7 +42,7 @@ export default function HomeScreen() {
     <View>
       {/* Recently Played */}
       <SectionHeader title="Recently Played" onSeeAll={() => { }} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
         {RECENTLY_PLAYED.map((item) => (
           <HorizontalCard key={item.id} {...item} />
         ))}
@@ -51,7 +50,7 @@ export default function HomeScreen() {
 
       {/* Artists */}
       <SectionHeader title="Artists" onSeeAll={() => { }} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
         {ARTISTS.map((item) => (
           <ArtistAvatar key={item.id} {...item} />
         ))}
@@ -59,7 +58,7 @@ export default function HomeScreen() {
 
       {/* Most Played */}
       <SectionHeader title="Most Played" onSeeAll={() => { }} />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalList}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
         {MOST_PLAYED.map((item) => (
           <HorizontalCard key={item.id} {...item} />
         ))}
@@ -68,108 +67,68 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: themeColors.background }]}>
+    <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'bg-black' : 'bg-white'}`}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <IconSymbol name="music.note" size={24} color={themeColors.tint} />
-          <Text style={[styles.headerTitle, { color: themeColors.text }]}>Mume</Text>
+      <View className="flex-row justify-between items-center px-5 py-4">
+        <View className="flex-row items-center gap-3">
+          <View
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#FFEDD5' }} // Orange-100 equivalent
+          >
+            <IconSymbol name="music.note" size={24} color="#FF9500" />
+          </View>
+          <Text className={`text-3xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
+            Mume
+          </Text>
         </View>
-        <TouchableOpacity>
-          <IconSymbol name="magnifyingglass" size={24} color={themeColors.icon} />
+        <TouchableOpacity
+          className="w-10 h-10 rounded-full items-center justify-center"
+          style={{ backgroundColor: colorScheme === 'dark' ? '#1F2937' : '#F3F4F6' }} // Gray-100 equivalent
+        >
+          <IconSymbol name="magnifyingglass" size={24} color={colorScheme === 'dark' ? 'white' : 'black'} />
         </TouchableOpacity>
       </View>
 
       {/* Tabs */}
-      <View style={styles.tabsContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabsContent}>
+      <View className="mt-6">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 20, gap: 32 }}
+        >
           {TABS.map((tab) => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tabItem, activeTab === tab && styles.activeTabItem]}
+              className="pb-3 items-center"
               onPress={() => setActiveTab(tab)}
             >
-              <Text style={[styles.tabText, activeTab === tab ? styles.activeTabText : { color: themeColors.icon }]}>{tab}</Text>
-              {activeTab === tab && <View style={styles.activeTabIndicator} />}
+              <Text className={`text-lg font-bold ${activeTab === tab
+                ? 'text-[#FF9500]'
+                : 'text-gray-400'
+                }`}>
+                {tab}
+              </Text>
+              {activeTab === tab && <View className="h-[3px] bg-[#FF9500] w-full absolute bottom-0 rounded-full" />}
             </TouchableOpacity>
           ))}
         </ScrollView>
+        {/* Full width separator line */}
+        <View className="h-[1px] bg-gray-100 dark:bg-gray-800 w-full mt-[-1px]" />
       </View>
 
       {/* Content */}
-      <View style={{ flex: 1 }}>
-
-
+      <View className="flex-1">
         {activeTab === 'Suggested' ? (
-          <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+          <ScrollView contentContainerClassName="pb-5" showsVerticalScrollIndicator={false}>
             {renderSuggestedContent()}
-            <View style={{ height: 20 }} />
+            <View className="h-5" />
           </ScrollView>
         ) : null}
 
         {activeTab === 'Songs' ? <SongsTab /> : null}
         {activeTab === 'Artists' ? <ArtistsTab /> : null}
+        {activeTab === 'Albums' ? <AlbumsTab /> : null}
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  tabsContainer: {
-    marginTop: 10,
-    marginBottom: 10,
-  },
-  tabsContent: {
-    paddingHorizontal: 20,
-  },
-  tabItem: {
-    marginRight: 24,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  activeTabItem: {
-    // borderBottomWidth: 3,
-    // borderBottomColor: '#FF9500',
-  },
-  tabText: {
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: '#FF9500',
-    fontWeight: 'bold',
-  },
-  activeTabIndicator: {
-    height: 3,
-    backgroundColor: '#FF9500',
-    width: '100%',
-    position: 'absolute',
-    bottom: 0,
-    borderRadius: 2,
-  },
-  horizontalList: {
-    paddingHorizontal: 20,
-  },
-});

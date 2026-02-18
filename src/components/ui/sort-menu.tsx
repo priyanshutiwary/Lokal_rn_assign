@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import React from 'react';
+import { Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 
 export type SortOption = 'Ascending' | 'Descending' | 'Artist' | 'Album' | 'Year' | 'Date Added' | 'Date Modified' | 'Composer';
 
@@ -36,24 +35,29 @@ export function SortMenu({ visible, onClose, selectedOption, onSelectOption }: S
             onRequestClose={onClose}
         >
             <TouchableWithoutFeedback onPress={onClose}>
-                <View style={styles.overlay}>
+                <View className="flex-1 bg-black/50 justify-center items-center">
                     <TouchableWithoutFeedback>
-                        <View style={[styles.menuContainer, { backgroundColor: themeColors.background }]}>
+                        <View 
+                            className="w-[250px] rounded-xl py-2 shadow-lg"
+                            style={{ backgroundColor: themeColors.background }}
+                        >
                             {SORT_OPTIONS.map((option) => (
                                 <TouchableOpacity
                                     key={option}
-                                    style={styles.optionItem}
+                                    className="flex-row justify-between items-center py-3 px-4"
                                     onPress={() => {
                                         onSelectOption(option);
                                         onClose();
                                     }}
                                 >
-                                    <Text style={[styles.optionText, { color: themeColors.text }]}>{option}</Text>
+                                    <Text className={`text-base font-medium ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                        {option}
+                                    </Text>
 
                                     {/* Radio Button */}
-                                    <View style={[styles.radioButton, { borderColor: themeColors.icon }]}>
+                                    <View className="w-5 h-5 rounded-full border-2 items-center justify-center" style={{ borderColor: themeColors.icon }}>
                                         {selectedOption === option && (
-                                            <View style={styles.radioButtonSelected} />
+                                            <View className="w-2.5 h-2.5 rounded-full bg-[#FF9500]" />
                                         )}
                                     </View>
                                 </TouchableOpacity>
@@ -65,47 +69,3 @@ export function SortMenu({ visible, onClose, selectedOption, onSelectOption }: S
         </Modal>
     );
 }
-
-const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    menuContainer: {
-        width: 250,
-        borderRadius: 12,
-        paddingVertical: 8,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.84,
-    },
-    optionItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-    },
-    optionText: {
-        fontSize: 16,
-        fontWeight: '500',
-    },
-    radioButton: {
-        width: 20,
-        height: 20,
-        borderRadius: 10,
-        borderWidth: 2,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    radioButtonSelected: {
-        width: 10,
-        height: 10,
-        borderRadius: 5,
-        backgroundColor: '#FF9500', // Orange
-    },
-});

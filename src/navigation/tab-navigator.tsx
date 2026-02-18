@@ -1,13 +1,13 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import HomeScreen from '@/screens/home-screen';
 import FavoritesScreen from '@/screens/favorites-screen';
+import HomeScreen from '@/screens/home-screen';
 import PlaylistsScreen from '@/screens/playlists-screen';
 import SettingsScreen from '@/screens/settings-screen';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React from 'react';
 import type { TabParamList } from './types';
 
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -18,17 +18,27 @@ export function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
+        tabBarActiveTintColor: '#FF9500', // Orange
+        tabBarInactiveTintColor: '#9CA3AF', // Gray
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
           backgroundColor: Colors[colorScheme ?? 'light'].background,
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
           borderTopWidth: 0,
-          elevation: 0,
-          height: 80,
+          elevation: 10, // Android shadow
+          shadowColor: '#000', // iOS shadow
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 10,
+          height: 90,
           paddingTop: 10,
-          paddingBottom: 10,
+          paddingBottom: 30, // Adjust for iPhone home indicator
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
         }
       }}>
       <Tab.Screen
@@ -36,7 +46,7 @@ export function TabNavigator() {
         component={HomeScreen}
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => <IconSymbol size={28} name={focused ? "house.fill" : "house"} color={color} />,
         }}
       />
       <Tab.Screen
@@ -44,7 +54,7 @@ export function TabNavigator() {
         component={FavoritesScreen}
         options={{
           title: 'Favorites',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color, focused }) => <IconSymbol size={28} name={focused ? "heart.fill" : "heart"} color={color} />,
         }}
       />
       <Tab.Screen
@@ -52,7 +62,7 @@ export function TabNavigator() {
         component={PlaylistsScreen}
         options={{
           title: 'Playlists',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="music.note.list" color={color} />,
+          tabBarIcon: ({ color, focused }) => <IconSymbol size={28} name="music.note.list" color={color} />, // Using same icon for now as 'doc.text' mapped to description matches image better
         }}
       />
       <Tab.Screen

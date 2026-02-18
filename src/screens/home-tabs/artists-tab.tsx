@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { ArtistListItem } from '@/components/ui/artist-list-item';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import React, { useMemo, useState } from 'react';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { ArtistOptionsModal } from '@/components/ui/artist-options-modal';
+import { ArtistListItem } from '@/components/ui/artist-list-item';
 import { SortMenu, SortOption } from '@/components/ui/sort-menu';
 
 interface Artist {
@@ -27,12 +27,16 @@ const ARTISTS_DATA: Artist[] = [
 
 export function ArtistsTab() {
     const colorScheme = useColorScheme() ?? 'light';
-    const themeColors = Colors[colorScheme];
     const [sortOption, setSortOption] = useState<SortOption>('Date Added');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
-    // Sort direction state for simpler toggle if not using full menu logic, 
-    // but here we use the specific SortOption values
-    const [isAscending, setIsAscending] = useState(false); // Default to Descending for 'Date Added' usually? Image shows 'Date Added' with up/down arrows
+    const [isAscending, setIsAscending] = useState(false);
+    const [optionsModalVisible, setOptionsModalVisible] = useState(false);
+    const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
+
+    const handleMorePress = (artist: Artist) => {
+        setSelectedArtist(artist);
+        setOptionsModalVisible(true);
+    };
 
     const sortedData = useMemo(() => {
         let data = [...ARTISTS_DATA];
@@ -53,35 +57,25 @@ export function ArtistsTab() {
             }
         });
 
-        // Toggle direction if needed (for simplicity in this mock, we might just rely on the specific option or a separate toggle)
-        // For the 'Date Added' example in the image, it implies a toggle. 
-        if (!isAscending && sortOption === 'Date Added') {
-            data.reverse();
-        }
-
         return data;
     }, [sortOption, isAscending]);
 
-    const handleSortToggle = () => {
-        // If it's already a directional sort, maybe flip it? 
-        // Or specific logic for 'Date Added'
-        setIsAscending(!isAscending);
-    };
-
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Text style={[styles.countText, { color: themeColors.text }]}>
+        <View className="flex-1">
+
+            <View className="flex-row justify-between items-center px-5 mt-4 mb-4">
+                <Text className={`text-xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
                     {ARTISTS_DATA.length} artists
                 </Text>
-                <TouchableOpacity style={styles.sortButton} onPress={() => setSortMenuVisible(true)}>
-                    <Text style={styles.sortText}>
+                <TouchableOpacity className="flex-row items-center gap-2" onPress={() => setSortMenuVisible(true)}>
+                    <Text className="text-base font-bold text-[#FF9500]">
                         {sortOption}
                     </Text>
-                    <IconSymbol name="arrow.up.arrow.down" size={14} color="#FF9500" />
+                    <IconSymbol name="arrow.up.arrow.down" size={20} color="#FF9500" />
                 </TouchableOpacity>
             </View>
+
+            <View className="h-[1px] bg-gray-100 dark:bg-gray-800 mb-4 mx-5" />
 
             {/* List */}
             <FlatList
@@ -90,11 +84,11 @@ export function ArtistsTab() {
                 renderItem={({ item }) => (
                     <ArtistListItem
                         {...item}
-                        onMore={() => console.log('More', item.name)}
+                        onMore={() => handleMorePress(item)}
                         onPress={() => console.log('Press', item.name)}
                     />
                 )}
-                contentContainerStyle={styles.listContent}
+                contentContainerClassName="px-5 pb-5"
                 showsVerticalScrollIndicator={false}
             />
 
@@ -104,41 +98,14 @@ export function ArtistsTab() {
                 selectedOption={sortOption}
                 onSelectOption={(option) => {
                     setSortOption(option);
-                    // Reset direction logic if needed when changing sort type
                 }}
             />
-        </View>
+
+            <ArtistOptionsModal
+                visible={optionsModalVisible}
+                onClose={() => setOptionsModalVisible(false)}
+                artist={selectedArtist}
+            />
+        </View >
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        marginTop: 10,
-        marginBottom: 10,
-    },
-    countText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    sortButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    sortText: {
-        fontSize: 14,
-        color: '#FF9500',
-        fontWeight: '600',
-    },
-    listContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-});

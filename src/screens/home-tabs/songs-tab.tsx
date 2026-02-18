@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import React, { useMemo, useState } from 'react';
+import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { SongListItem } from '@/components/ui/song-list-item';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-import { SortMenu, SortOption } from '@/components/ui/sort-menu';
 import { SongOptionsModal } from '@/components/ui/song-options-modal';
+import { SortMenu, SortOption } from '@/components/ui/sort-menu';
 
 interface Song {
     id: string;
@@ -29,10 +28,8 @@ const SONGS_DATA: Song[] = [
 
 export function SongsTab() {
     const colorScheme = useColorScheme() ?? 'light';
-    const themeColors = Colors[colorScheme];
     const [sortOption, setSortOption] = useState<SortOption>('Ascending');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
-
     const [optionsModalVisible, setOptionsModalVisible] = useState(false);
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
 
@@ -67,19 +64,20 @@ export function SongsTab() {
     };
 
     return (
-        <View style={styles.container}>
+        <View className="flex-1">
             {/* Header */}
-            <View style={styles.header}>
-                <Text style={[styles.countText, { color: themeColors.text }]}>
+            <View className="flex-row justify-between items-center px-5 mt-4 mb-4">
+                <Text className={`text-xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
                     {SONGS_DATA.length} songs
                 </Text>
-                <TouchableOpacity style={styles.sortButton} onPress={() => setSortMenuVisible(true)}>
-                    <Text style={styles.sortText}>
+                <TouchableOpacity className="flex-row items-center gap-2" onPress={() => setSortMenuVisible(true)}>
+                    <Text className="text-base font-bold text-[#FF9500]">
                         {sortOption}
                     </Text>
-                    <IconSymbol name="arrow.up.arrow.down" size={14} color="#FF9500" />
                 </TouchableOpacity>
             </View>
+
+            <View className="h-[1px] bg-gray-100 dark:bg-gray-800 mb-4 mx-5" />
 
             {/* List */}
             <FlatList
@@ -92,7 +90,7 @@ export function SongsTab() {
                         onMore={() => handleMorePress(item)}
                     />
                 )}
-                contentContainerStyle={styles.listContent}
+                contentContainerClassName="px-5 pb-5"
                 showsVerticalScrollIndicator={false}
             />
 
@@ -109,38 +107,6 @@ export function SongsTab() {
                 onClose={() => setOptionsModalVisible(false)}
                 song={selectedSong}
             />
-        </View>
+        </View >
     );
 }
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 20,
-        marginTop: 10,
-        marginBottom: 10,
-    },
-    countText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    sortButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    sortText: {
-        fontSize: 14,
-        color: '#FF9500',
-        fontWeight: '600',
-    },
-    listContent: {
-        paddingHorizontal: 20,
-        paddingBottom: 20,
-    },
-});
