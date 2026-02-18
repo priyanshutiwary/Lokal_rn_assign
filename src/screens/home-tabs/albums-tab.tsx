@@ -4,6 +4,9 @@ import { SortMenu, SortOption } from '@/components/ui/sort-menu';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/navigation/types';
 
 interface Album {
     id: string;
@@ -26,6 +29,7 @@ const ALBUMS_DATA: Album[] = [
 
 export function AlbumsTab() {
     const colorScheme = useColorScheme() ?? 'light';
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [sortOption, setSortOption] = useState<SortOption>('Date Modified');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
 
@@ -44,6 +48,10 @@ export function AlbumsTab() {
         });
     }, [sortOption]);
 
+    const handleAlbumPress = (album: Album) => {
+        navigation.navigate('AlbumDetail', { album });
+    };
+
     return (
         <View className="flex-1">
             <View className="flex-row justify-between items-center px-5 mt-4 mb-4">
@@ -58,7 +66,7 @@ export function AlbumsTab() {
                 </TouchableOpacity>
             </View>
 
-            <View className="h-[1px] bg-gray-100 dark:bg-gray-800 mb-4 mx-5" />
+            <View className="h-[1px] bg-gray-200 dark:bg-gray-900 mb-4 mx-5" />
 
             <FlatList
                 data={sortedData}
@@ -66,7 +74,7 @@ export function AlbumsTab() {
                 renderItem={({ item }) => (
                     <AlbumGridItem
                         {...item}
-                        onPress={() => console.log('Pressed', item.title)}
+                        onPress={() => handleAlbumPress(item)}
                         onMore={() => console.log('More', item.title)}
                     />
                 )}

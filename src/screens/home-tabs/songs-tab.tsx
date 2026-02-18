@@ -77,7 +77,7 @@ export function SongsTab() {
                 </TouchableOpacity>
             </View>
 
-            <View className="h-[1px] bg-gray-100 dark:bg-gray-800 mb-4 mx-5" />
+            <View className="h-[1px] bg-gray-200 dark:bg-gray-900 mb-4 mx-5" />
 
             {/* List */}
             <FlatList

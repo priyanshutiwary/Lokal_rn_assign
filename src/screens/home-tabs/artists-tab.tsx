@@ -5,6 +5,9 @@ import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { ArtistOptionsModal } from '@/components/ui/artist-options-modal';
 import { ArtistListItem } from '@/components/ui/artist-list-item';
 import { SortMenu, SortOption } from '@/components/ui/sort-menu';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@/navigation/types';
 
 interface Artist {
     id: string;
@@ -27,6 +30,7 @@ const ARTISTS_DATA: Artist[] = [
 
 export function ArtistsTab() {
     const colorScheme = useColorScheme() ?? 'light';
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const [sortOption, setSortOption] = useState<SortOption>('Date Added');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
     const [isAscending, setIsAscending] = useState(false);
@@ -36,6 +40,10 @@ export function ArtistsTab() {
     const handleMorePress = (artist: Artist) => {
         setSelectedArtist(artist);
         setOptionsModalVisible(true);
+    };
+
+    const handleArtistPress = (artist: Artist) => {
+        navigation.navigate('ArtistDetail', { artist });
     };
 
     const sortedData = useMemo(() => {
@@ -75,7 +83,7 @@ export function ArtistsTab() {
                 </TouchableOpacity>
             </View>
 
-            <View className="h-[1px] bg-gray-100 dark:bg-gray-800 mb-4 mx-5" />
+            <View className="h-[1px] bg-gray-200 dark:bg-gray-900 mb-4 mx-5" />
 
             {/* List */}
             <FlatList
@@ -85,7 +93,7 @@ export function ArtistsTab() {
                     <ArtistListItem
                         {...item}
                         onMore={() => handleMorePress(item)}
-                        onPress={() => console.log('Press', item.name)}
+                        onPress={() => handleArtistPress(item)}
                     />
                 )}
                 contentContainerClassName="px-5 pb-5"

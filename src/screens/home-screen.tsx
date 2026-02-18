@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -11,6 +13,7 @@ import { SectionHeader } from '@/components/ui/section-header';
 import { AlbumsTab } from './home-tabs/albums-tab';
 import { ArtistsTab } from './home-tabs/artists-tab';
 import { SongsTab } from './home-tabs/songs-tab';
+import { RootStackParamList } from '@/navigation/types';
 
 const TABS = ['Suggested', 'Songs', 'Artists', 'Albums', 'Folders'];
 
@@ -21,10 +24,10 @@ const RECENTLY_PLAYED = [
 ];
 
 const ARTISTS = [
-  { id: '1', name: 'Ariana Grande', image: 'https://upload.wikimedia.org/wikipedia/en/4/47/Ariana_Grande_-_Dangerous_Woman_%28Official_Album_Cover%29.png' },
-  { id: '2', name: 'The Weeknd', image: 'https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png' },
-  { id: '3', name: 'Acidrap', image: 'https://upload.wikimedia.org/wikipedia/en/d/db/Chance_the_Rapper_-_Acid_Rap.jpg' },
-  { id: '4', name: 'Mac Miller', image: 'https://upload.wikimedia.org/wikipedia/en/5/5f/Mac_Miller_-_Swimming.png' },
+  { id: '1', name: 'Ariana Grande', image: 'https://upload.wikimedia.org/wikipedia/en/4/47/Ariana_Grande_-_Dangerous_Woman_%28Official_Album_Cover%29.png', albumCount: 1, songCount: 20 },
+  { id: '2', name: 'The Weeknd', image: 'https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png', albumCount: 1, songCount: 16 },
+  { id: '3', name: 'Acidrap', image: 'https://upload.wikimedia.org/wikipedia/en/d/db/Chance_the_Rapper_-_Acid_Rap.jpg', albumCount: 2, songCount: 28 },
+  { id: '4', name: 'Mac Miller', image: 'https://upload.wikimedia.org/wikipedia/en/5/5f/Mac_Miller_-_Swimming.png', albumCount: 1, songCount: 14 },
 ];
 
 const MOST_PLAYED = [
@@ -36,6 +39,7 @@ const MOST_PLAYED = [
 export default function HomeScreen() {
   const colorScheme = useColorScheme() ?? 'light';
   const themeColors = Colors[colorScheme];
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState('Suggested');
 
   const renderSuggestedContent = () => (
@@ -52,7 +56,9 @@ export default function HomeScreen() {
       <SectionHeader title="Artists" onSeeAll={() => { }} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
         {ARTISTS.map((item) => (
-          <ArtistAvatar key={item.id} {...item} />
+          <TouchableOpacity key={item.id} onPress={() => navigation.navigate('ArtistDetail', { artist: item })}>
+            <ArtistAvatar {...item} />
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
@@ -113,7 +119,7 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
         {/* Full width separator line */}
-        <View className="h-[1px] bg-gray-100 dark:bg-gray-800 w-full mt-[-1px]" />
+        <View className="h-[1px] bg-gray-200 dark:bg-gray-900 w-full mt-[-1px]" />
       </View>
 
       {/* Content */}
