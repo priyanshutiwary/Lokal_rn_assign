@@ -2,8 +2,10 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import { Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View, Share, Alert } from 'react-native';
 import { IconSymbol } from './icon-symbol';
+import { usePlayerStore } from '@/store/player-store';
+import { useMusicStore } from '@/store/music-store';
 
 interface Artist {
     id: string;
@@ -22,8 +24,69 @@ interface ArtistOptionsModalProps {
 export function ArtistOptionsModal({ visible, onClose, artist }: ArtistOptionsModalProps) {
     const colorScheme = useColorScheme() ?? 'light';
     const themeColors = Colors[colorScheme];
+    const { playSong, queue, currentIndex, setQueue } = usePlayerStore();
+    const { songs } = useMusicStore();
 
     if (!artist) return null;
+
+    // Get all songs by this artist
+    const artistSongs = songs.filter(song => 
+        song.artists?.primary?.some(a => a.id === artist.id) || 
+        song.primaryArtists?.toLowerCase().includes(artist.name.toLowerCase())
+    );
+
+    const handlePlay = () => {
+        if (artistSongs.length > 0) {
+            playSong(artistSongs[0], artistSongs);
+            onClose();
+        } else {
+            Alert.alert('No Songs', 'No songs available for this artist');
+            onClose();
+        }
+    };
+
+    const handlePlayNext = () => {
+        if (artistSongs.length > 0) {
+            const newQueue = [...queue];
+            newQueue.splice(currentIndex + 1, 0, ...artistSongs);
+            setQueue(newQueue, currentIndex);
+            Alert.alert('Added to Queue', `${artistSongs.length} songs will play next`);
+        } else {
+            Alert.alert('No Songs', 'No songs available for this artist');
+        }
+        onClose();
+    };
+
+    const handleAddToQueue = () => {
+        if (artistSongs.length > 0) {
+            const newQueue = [...queue, ...artistSongs];
+            setQueue(newQueue, currentIndex);
+            Alert.alert('Added to Queue', `${artistSongs.length} songs added to playing queue`);
+        } else {
+            Alert.alert('No Songs', 'No songs available for this artist');
+        }
+        onClose();
+    };
+
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: `Check out ${artist.name}`,
+                title: artist.name,
+            });
+        } catch (error) {
+            console.error('Error sharing:', error);
+        }
+        onClose();
+    };
+
+    const actions = [
+        { icon: 'play.circle', label: 'Play', onPress: handlePlay },
+        { icon: 'arrow.right.circle', label: 'Play Next', onPress: handlePlayNext },
+        { icon: 'text.badge.plus', label: 'Add to Playing Queue', onPress: handleAddToQueue },
+        { icon: 'plus.circle', label: 'Add to Playlist', onPress: () => { Alert.alert('Coming Soon', 'Playlist feature coming soon!'); onClose(); } },
+        { icon: 'square.and.arrow.up', label: 'Share', onPress: handleShare },
+    ];
 
     return (
         <Modal
@@ -59,43 +122,23 @@ export function ArtistOptionsModal({ visible, onClose, artist }: ArtistOptionsMo
                             </View>
 
                             {/* Divider */}
-                            <View className="h-[1px] bg-gray-200 dark:bg-gray-800 mb-4" />
+                            <View className="h-[1px] bg-gray-200 dark:bg-gray-800 mb-2" />
 
                             {/* Actions */}
-                            <TouchableOpacity className="flex-row items-center py-4 space-x-4">
-                                <IconSymbol name="play.circle" size={24} color={themeColors.text} />
-                                <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    Play
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className="flex-row items-center py-4 space-x-4">
-                                <IconSymbol name="arrow.right.circle" size={24} color={themeColors.text} />
-                                <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    Play Next
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className="flex-row items-center py-4 space-x-4">
-                                <IconSymbol name="text.badge.plus" size={24} color={themeColors.text} />
-                                <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    Add to Playing Queue
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className="flex-row items-center py-4 space-x-4">
-                                <IconSymbol name="plus.circle" size={24} color={themeColors.text} />
-                                <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    Add to Playlist
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity className="flex-row items-center py-4 space-x-4">
-                                <IconSymbol name="square.and.arrow.up" size={24} color={themeColors.text} />
-                                <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
-                                    Share
-                                </Text>
-                            </TouchableOpacity>
+                            <View>
+                                {actions.map((action, index) => (
+                                    <TouchableOpacity 
+                                        key={index} 
+                                        className="flex-row items-center py-4 space-x-4"
+                                        onPress={action.onPress}
+                                    >
+                                        <IconSymbol name={action.icon as any} size={26} color={themeColors.text} />
+                                        <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
+                                            {action.label}
+                                        </Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </View>

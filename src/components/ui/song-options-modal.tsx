@@ -2,13 +2,13 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Image } from 'expo-image';
 import React from 'react';
-import { Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View, ScrollView, Share, Alert } from 'react-native';
+import { Modal, Text, TouchableOpacity, TouchableWithoutFeedback, View, Share, Alert } from 'react-native';
 import { IconSymbol } from './icon-symbol';
 import { usePlayerStore } from '@/store/player-store';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/navigation/types';
-import { Song } from '@/services/api';
+import { Song } from '../../services/api';
 
 interface SongOptionsModalProps {
     visible: boolean;
@@ -109,9 +109,9 @@ export function SongOptionsModal({ visible, onClose, song, allSongs = [] }: Song
         { icon: 'text.badge.plus', label: 'Add to Playing Queue', onPress: handleAddToQueue },
         { icon: 'plus.circle', label: 'Add to Playlist', onPress: () => { Alert.alert('Coming Soon', 'Playlist feature coming soon!'); onClose(); } },
         { icon: 'square.and.arrow.up', label: 'Share', onPress: handleShare },
-        { icon: 'opticaldisc', label: 'Go to Album', onPress: handleGoToAlbum },
-        { icon: 'person', label: 'Go to Artist', onPress: handleGoToArtist },
-        { icon: 'info.circle', label: 'Details', onPress: handleDetails },
+        { icon: 'music.note.list', label: 'Go to Album', onPress: handleGoToAlbum },
+        { icon: 'music.note', label: 'Go to Artist', onPress: handleGoToArtist },
+        { icon: 'ellipsis', label: 'Details', onPress: handleDetails },
     ];
 
     return (
@@ -151,20 +151,20 @@ export function SongOptionsModal({ visible, onClose, song, allSongs = [] }: Song
                             <View className="h-[1px] bg-gray-200 dark:bg-gray-800 mb-2" />
 
                             {/* Actions */}
-                            <ScrollView showsVerticalScrollIndicator={false} className="max-h-[400px]">
+                            <View>
                                 {actions.map((action, index) => (
                                     <TouchableOpacity 
                                         key={index} 
                                         className="flex-row items-center py-4 space-x-4"
                                         onPress={action.onPress}
                                     >
-                                        <IconSymbol name={action.icon as any} size={24} color={themeColors.text} />
+                                        <IconSymbol name={action.icon as any} size={26} color={themeColors.text} />
                                         <Text className={`text-lg font-medium ml-4 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
                                             {action.label}
                                         </Text>
                                     </TouchableOpacity>
                                 ))}
-                            </ScrollView>
+                            </View>
                         </View>
                     </TouchableWithoutFeedback>
                 </View>

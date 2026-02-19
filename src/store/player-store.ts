@@ -64,7 +64,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
 
       set({ isLoading: true, isTransitioning: true });
       
-      // CRITICAL: Unload and stop previous sound completely
+      // CRITICAL: Unload and stop previous sound completely (including other apps)
       if (currentSound) {
         console.log('Stopping and unloading previous sound');
         try {
@@ -78,11 +78,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         }
       }
 
-      // Configure audio mode
+      // Configure audio mode for background playback and stopping other audio
       await Audio.setAudioModeAsync({
         playsInSilentModeIOS: true,
         staysActiveInBackground: true,
-        shouldDuckAndroid: true,
+        shouldDuckAndroid: false, // Don't duck, stop other audio
+        interruptionModeIOS: 1, // DoNotMix - stop other audio
+        interruptionModeAndroid: 2, // DoNotMix - stop other audio
       });
 
       // Get streaming URL
@@ -99,7 +101,11 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       // Create and load new sound
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: streamUrl },
-        { shouldPlay: true, progressUpdateIntervalMillis: 1000 },
+        { 
+          shouldPlay: true, 
+          progressUpdateIntervalMillis: 1000,
+          androidImplementation: 'MediaPlayer', // Better for streaming
+        },
         (status) => get().updatePlaybackStatus(status)
       );
 
