@@ -1,5 +1,9 @@
 import { create } from 'zustand';
-import { Audio } from 'expo-av';
+import { 
+  useAudioPlayer, 
+  AudioPlayer,
+  setAudioModeAsync,
+} from 'expo-audio';
 import { Song, getDownloadUrl } from '../services/api';
 
 interface PlayerState {
@@ -9,20 +13,21 @@ interface PlayerState {
   duration: number;
   queue: Song[];
   currentIndex: number;
-  sound: Audio.Sound | null;
+  player: AudioPlayer | null;
   isLoading: boolean;
   isTransitioning: boolean;
   
   // Actions
+  setPlayer: (player: AudioPlayer | null) => void;
   playSong: (song: Song, queue?: Song[]) => Promise<void>;
   playQueue: (songs: Song[], shuffle?: boolean) => Promise<void>;
-  togglePlayPause: () => Promise<void>;
+  togglePlayPause: () => void;
   playNext: () => Promise<void>;
   playPrevious: () => Promise<void>;
-  seekTo: (time: number) => Promise<void>;
+  seekTo: (time: number) => void;
   setQueue: (songs: Song[], startIndex?: number) => void;
-  clearPlayer: () => Promise<void>;
-  updatePlaybackStatus: (status: any) => void;
+  clearPlayer: () => void;
+  updatePlaybackStatus: (currentTime: number, duration: number, isPlaying: boolean) => void;
 }
 
 export const usePlayerStore = create<PlayerState>((set, get) => ({
@@ -32,12 +37,16 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   duration: 0,
   queue: [],
   currentIndex: 0,
-  sound: null,
+  player: null,
   isLoading: false,
   isTransitioning: false,
 
+  setPlayer: (player: AudioPlayer | null) => {
+    set({ player });
+  },
+
   playSong: async (song: Song, queue?: Song[]) => {
-    const { sound: currentSound, currentSong: prevSong, isTransitioning } = get();
+    const { player, currentSong: prevSong, isTransitioning } = get();
     
     // Prevent concurrent play operations
     if (isTransitioning) {
@@ -46,45 +55,36 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     }
     
     try {
-      // If it's the same song and sound exists, just toggle play/pause
-      if (prevSong?.id === song.id && currentSound) {
+      if (!player) {
+        console.error('No player instance available');
+        return;
+      }
+
+      // If it's the same song, just toggle play/pause
+      if (prevSong?.id === song.id) {
         console.log('Same song, toggling play state');
-        const status = await currentSound.getStatusAsync();
-        if (status.isLoaded) {
-          if (status.isPlaying) {
-            await currentSound.pauseAsync();
-            set({ isPlaying: false, isLoading: false });
-          } else {
-            await currentSound.playAsync();
-            set({ isPlaying: true, isLoading: false });
-          }
+        if (player.playing) {
+          player.pause();
+          set({ isPlaying: false });
+        } else {
+          player.play();
+          set({ isPlaying: true });
         }
         return;
       }
 
       set({ isLoading: true, isTransitioning: true });
       
-      // CRITICAL: Unload and stop previous sound completely (including other apps)
-      if (currentSound) {
-        console.log('Stopping and unloading previous sound');
-        try {
-          const status = await currentSound.getStatusAsync();
-          if (status.isLoaded) {
-            await currentSound.stopAsync();
-          }
-          await currentSound.unloadAsync();
-        } catch (error) {
-          console.error('Error unloading previous sound:', error);
-        }
+      // Stop current playback
+      if (player.playing) {
+        player.pause();
       }
 
-      // Configure audio mode for background playback and stopping other audio
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: true,
-        shouldDuckAndroid: false, // Don't duck, stop other audio
-        interruptionModeIOS: 1, // DoNotMix - stop other audio
-        interruptionModeAndroid: 2, // DoNotMix - stop other audio
+      // Configure audio mode for exclusive playback (stops other apps)
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: 'doNotMix', // This stops other apps' audio
       });
 
       // Get streaming URL
@@ -96,18 +96,13 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         return;
       }
 
-      console.log('Loading new song:', song.name, 'URL:', streamUrl);
+      console.log('Loading new song:', song.name);
 
-      // Create and load new sound
-      const { sound: newSound } = await Audio.Sound.createAsync(
-        { uri: streamUrl },
-        { 
-          shouldPlay: true, 
-          progressUpdateIntervalMillis: 1000,
-          androidImplementation: 'MediaPlayer', // Better for streaming
-        },
-        (status) => get().updatePlaybackStatus(status)
-      );
+      // Replace the audio source
+      player.replace({ uri: streamUrl });
+      
+      // Play the new song
+      player.play();
 
       const newQueue = queue || [song];
       const index = queue ? queue.findIndex(s => s.id === song.id) : 0;
@@ -119,7 +114,6 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
         duration: song.duration,
         queue: newQueue,
         currentIndex: index >= 0 ? index : 0,
-        sound: newSound,
         isLoading: false,
         isTransitioning: false,
       });
@@ -144,35 +138,35 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   },
 
   togglePlayPause: async () => {
-    const { sound, isPlaying } = get();
+    const { player, isPlaying } = get();
     
-    if (!sound) {
-      console.log('No sound loaded');
+    if (!player) {
+      console.log('No player loaded');
       return;
     }
 
     try {
-      const status = await sound.getStatusAsync();
-      
-      if (!status.isLoaded) {
-        console.log('Sound not loaded yet');
-        return;
-      }
+      // Ensure audio mode is maintained
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: 'doNotMix', // Keep other apps' audio stopped
+      });
 
       if (isPlaying) {
-        await sound.pauseAsync();
+        player.pause();
         set({ isPlaying: false });
       } else {
-        await sound.playAsync();
+        player.play();
         set({ isPlaying: true });
       }
     } catch (error) {
-      console.error('Error toggling playback:', error);
+      console.error('Error toggling play/pause:', error);
     }
   },
 
   playNext: async () => {
-    const { queue, currentIndex, sound: currentSound, isTransitioning } = get();
+    const { queue, currentIndex, isTransitioning } = get();
     
     if (isTransitioning) {
       console.log('Already transitioning, ignoring next request');
@@ -181,30 +175,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     
     if (queue.length === 0) return;
     
-    set({ isTransitioning: true });
-    
-    // Stop current sound before playing next
-    if (currentSound) {
-      try {
-        const status = await currentSound.getStatusAsync();
-        if (status.isLoaded) {
-          await currentSound.stopAsync();
-        }
-        await currentSound.unloadAsync();
-      } catch (error) {
-        console.error('Error stopping current sound:', error);
-      }
-    }
-    
     const nextIndex = (currentIndex + 1) % queue.length;
     const nextSong = queue[nextIndex];
     
-    set({ isTransitioning: false });
     await get().playSong(nextSong, queue);
   },
 
   playPrevious: async () => {
-    const { queue, currentIndex, sound: currentSound, isTransitioning } = get();
+    const { queue, currentIndex, isTransitioning } = get();
     
     if (isTransitioning) {
       console.log('Already transitioning, ignoring previous request');
@@ -213,46 +191,36 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     
     if (queue.length === 0) return;
     
-    set({ isTransitioning: true });
-    
-    // Stop current sound before playing previous
-    if (currentSound) {
-      try {
-        const status = await currentSound.getStatusAsync();
-        if (status.isLoaded) {
-          await currentSound.stopAsync();
-        }
-        await currentSound.unloadAsync();
-      } catch (error) {
-        console.error('Error stopping current sound:', error);
-      }
-    }
-    
     const prevIndex = currentIndex === 0 ? queue.length - 1 : currentIndex - 1;
     const prevSong = queue[prevIndex];
     
-    set({ isTransitioning: false });
     await get().playSong(prevSong, queue);
   },
 
   seekTo: async (time: number) => {
-    const { sound } = get();
+    const { player, isPlaying } = get();
     
-    if (!sound) {
-      console.log('No sound loaded');
+    if (!player) {
+      console.log('No player loaded');
       return;
     }
 
     try {
-      const status = await sound.getStatusAsync();
-      
-      if (!status.isLoaded) {
-        console.log('Sound not loaded yet');
-        return;
-      }
+      // Ensure audio mode is maintained during seek
+      await setAudioModeAsync({
+        playsInSilentMode: true,
+        shouldPlayInBackground: true,
+        interruptionMode: 'doNotMix', // Keep other apps' audio stopped
+      });
 
-      await sound.setPositionAsync(time * 1000); // Convert to milliseconds
+      // Perform the seek
+      player.seekTo(time);
       set({ currentTime: time });
+
+      // If we were playing, ensure we continue playing after seek
+      if (isPlaying && !player.playing) {
+        player.play();
+      }
     } catch (error) {
       console.error('Error seeking:', error);
     }
@@ -267,19 +235,14 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
     });
   },
 
-  clearPlayer: async () => {
-    const { sound } = get();
+  clearPlayer: () => {
+    const { player } = get();
     
-    if (sound) {
-      try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          await sound.stopAsync();
-        }
-        await sound.unloadAsync();
-      } catch (error) {
-        console.error('Error unloading sound:', error);
+    if (player) {
+      if (player.playing) {
+        player.pause();
       }
+      player.remove();
     }
 
     set({
@@ -289,23 +252,23 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
       duration: 0,
       queue: [],
       currentIndex: 0,
-      sound: null,
+      player: null,
       isLoading: false,
       isTransitioning: false,
     });
   },
 
-  updatePlaybackStatus: (status: any) => {
-    if (!status.isLoaded) return;
-
+  updatePlaybackStatus: (currentTime: number, duration: number, isPlaying: boolean) => {
+    const state = get();
+    
     set({
-      isPlaying: status.isPlaying,
-      currentTime: Math.floor(status.positionMillis / 1000),
-      duration: Math.floor(status.durationMillis / 1000),
+      isPlaying,
+      currentTime: Math.floor(currentTime),
+      duration: Math.floor(duration),
     });
 
     // Auto-play next song when current finishes
-    if (status.didJustFinish) {
+    if (currentTime >= duration && duration > 0 && state.isPlaying) {
       get().playNext();
     }
   },

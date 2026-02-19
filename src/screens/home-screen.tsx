@@ -25,19 +25,28 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState('Suggested');
   
-  const { songs, albums, artists, isLoading, fetchSongs, fetchAlbums, fetchArtists } = useMusicStore();
+  const { songs, albums, artists, isLoading, isOffline, _hasHydrated, fetchSongs, fetchAlbums, fetchArtists } = useMusicStore();
   const { playSong } = usePlayerStore();
 
   useEffect(() => {
-    // Fetch initial data with popular queries
-    fetchSongs('arijit singh');
-    fetchAlbums('bollywood');
-    fetchArtists('arijit singh');
-  }, []);
+    // Only fetch initial data after hydration is complete
+    if (_hasHydrated) {
+      // Fetch initial data with popular queries only if we don't have cached data
+      if (songs.length === 0) {
+        fetchSongs('arijit singh');
+      }
+      if (albums.length === 0) {
+        fetchAlbums('bollywood');
+      }
+      if (artists.length === 0) {
+        fetchArtists('arijit singh');
+      }
+    }
+  }, [_hasHydrated]);
 
-  const recentlyPlayed = songs.slice(0, 3);
-  const topArtists = artists.slice(0, 4);
-  const mostPlayed = songs.slice(3, 6);
+  const recentlyPlayed = songs.slice(0, 10);
+  const topArtists = artists.slice(0, 10);
+  const mostPlayed = songs.slice(10, 20);
 
   const renderSuggestedContent = () => {
     if (isLoading && songs.length === 0) {
@@ -51,7 +60,7 @@ export default function HomeScreen() {
     return (
       <View>
         {/* Recently Played */}
-        <SectionHeader title="Recently Played" onSeeAll={() => { }} />
+        <SectionHeader title="Recently Played" onSeeAll={() => setActiveTab('Songs')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
           {recentlyPlayed.map((song) => (
             <HorizontalCard 
@@ -65,7 +74,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Artists */}
-        <SectionHeader title="Artists" onSeeAll={() => { }} />
+        <SectionHeader title="Artists" onSeeAll={() => setActiveTab('Artists')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
           {topArtists.map((artist) => {
             const imageUrl = getImageUrl(artist.image, '500x500');
@@ -94,7 +103,7 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Most Played */}
-        <SectionHeader title="Most Played" onSeeAll={() => { }} />
+        <SectionHeader title="Most Played" onSeeAll={() => setActiveTab('Albums')} />
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="px-5">
           {mostPlayed.map((song) => (
             <HorizontalCard 
@@ -112,6 +121,15 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className={`flex-1 ${colorScheme === 'dark' ? 'bg-black' : 'bg-white'}`}>
+      {/* Offline Indicator */}
+      {isOffline && (
+        <View className="bg-yellow-500 px-5 py-2">
+          <Text className="text-center text-sm font-semibold text-black">
+            Offline - Showing cached data
+          </Text>
+        </View>
+      )}
+
       {/* Header */}
       <View className="flex-row justify-between items-center px-5 py-4">
         <View className="flex-row items-center gap-3">

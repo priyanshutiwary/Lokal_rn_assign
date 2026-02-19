@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from './icon-symbol';
+import { FallbackImage } from './fallback-image';
 import { RootStackParamList } from '@/navigation/types';
 import { usePlayerStore } from '@/store/player-store';
 import { getImageUrl } from '../../services/api';
@@ -34,10 +35,10 @@ export function MiniPlayer() {
       activeOpacity={0.9}
     >
       {/* Album Art */}
-      <Image
-        source={{ uri: albumArt }}
+      <FallbackImage
+        uri={albumArt}
+        fallbackIcon="music.note"
         style={{ width: 50, height: 50, borderRadius: 8 }}
-        resizeMode="cover"
       />
 
       {/* Song Info */}

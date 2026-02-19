@@ -1,62 +1,107 @@
-# Mume
+# Mume - Music Player
 
-React Native app built with Expo, React Navigation v6+, Zustand, and MMKV.
+A music streaming app built with React Native (Expo) using the JioSaavn API.
 
-## Tech Stack
+## Demo
 
-- React Native (Expo)
-- TypeScript
-- React Navigation v6+ (Native Stack + Bottom Tabs)
-- Zustand (State Management)
-- MMKV (Fast Storage)
+Watch the demo: [YouTube Demo](https://youtube.com/shorts/Tn8d3ZcHaFs?feature=share)
 
-## Getting Started
+## Setup
 
-1. Install dependencies:
+### Prerequisites
+- Node.js (v18+)
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android) or Xcode (for iOS)
+
+### Installation
+
 ```bash
+cd mume
 npm install
-```
-
-2. Start the development server:
-```bash
 npm start
 ```
 
-3. Run on your platform:
-- Press `i` for iOS simulator
-- Press `a` for Android emulator
-- Press `w` for web
+Run on device:
+- Press `a` for Android
+- Press `i` for iOS
+- Scan QR code with Expo Go
 
-## Project Structure
+### Build APK
 
-```
-mume/
-├── src/
-│   ├── navigation/      # Navigation setup
-│   ├── screens/         # Screen components
-│   ├── store/          # Zustand stores
-│   └── utils/          # Utilities (storage, etc.)
-├── components/         # Reusable components
-├── constants/          # Theme and constants
-├── hooks/             # Custom hooks
-├── assets/            # Images and static files
-└── App.tsx            # Root component
+Option 1 - EAS Build (Cloud):
+```bash
+eas build --platform android --profile preview
 ```
 
-## State Management
+Option 2 - Local Build (Manual):
+```bash
+# Generate native Android project
+npx expo prebuild
 
-Using Zustand for state management. Example stores:
-- `useExampleStore` - Simple counter example
-- `usePersistedStore` - Persisted state with MMKV
+# Navigate to Android folder and build
+cd android
+./gradlew assembleDebug
+./gradlew installDebug
 
-## Storage
+# APK will be at: android/app/build/outputs/apk/debug/app-debug.apk
+```
 
-MMKV is configured for fast, synchronous storage. See `src/utils/storage.ts` for utilities.
+## Architecture
 
-## Navigation
+### State Management - Zustand
 
-React Navigation v6+ with:
-- Native Stack Navigator (root)
-- Bottom Tabs Navigator (main tabs)
+Chose Zustand over Redux Toolkit for:
+- Simpler API with less boilerplate
+- Built-in persistence middleware
+- Smaller bundle size
+- Hooks-based, easy to use
 
-Navigation types are defined in `src/navigation/types.ts`.
+Two stores:
+- `music-store.ts` - Search results, pagination, caching
+- `player-store.ts` - Playback state, queue, controls
+
+### Audio Playback - Expo Audio
+
+Key features:
+- Background playback (`shouldPlayInBackground: true`)
+- Silent mode support (`playsInSilentMode: true`)
+- Exclusive audio mode (`interruptionMode: 'doNotMix'`)
+- Real-time status updates via `useAudioPlayerStatus`
+- Auto-advance to next song
+
+`AudioPlayerProvider` wraps the app and manages player lifecycle through Zustand.
+
+### Navigation - React Navigation v7
+
+- Stack navigator for screens
+- Tab navigator for Home (Songs/Albums/Artists)
+- Type-safe with TypeScript
+- Mini player persists via absolute positioning
+
+### Persistence - AsyncStorage
+
+- Caches search results for offline use
+- Stores fetch timestamps
+- Handles offline mode gracefully
+- Hydration tracking
+
+## Trade-offs
+
+### Prioritized
+- Smooth playback and background mode
+- Perfect sync between mini and full player
+- Offline support with cached data
+- Type safety throughout
+- Clean, maintainable architecture
+
+### Not Implemented
+- Download for offline (needs file system management)
+- Repeat modes 
+- User playlists
+
+### Technical Debt
+- No unit tests
+- Limited error boundaries
+- No analytics/crash reporting
+- Could improve image caching

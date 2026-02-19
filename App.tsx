@@ -8,12 +8,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import './global.css';
 import { cssInterop } from "nativewind";
 import { Image } from "expo-image";
-import { Audio } from 'expo-av';
+import { setAudioModeAsync } from 'expo-audio';
 
 cssInterop(Image, { className: "style" });
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { RootNavigator } from '@/navigation/root-navigator';
+import { AudioPlayerProvider } from '@/components/audio-player-provider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -24,14 +25,12 @@ export default function App() {
     // Initialize audio session for background playback
     const initAudio = async () => {
       try {
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
-          shouldDuckAndroid: false, // Don't duck, stop other audio
-          interruptionModeIOS: 1, // DoNotMix - stop other audio
-          interruptionModeAndroid: 2, // DoNotMix - stop other audio
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          interruptionMode: 'doNotMix', // Stop other apps' audio
         });
-        console.log('Audio session initialized for background playback');
+        console.log('Audio session initialized - will stop other apps audio');
       } catch (error) {
         console.error('Error initializing audio session:', error);
       }
@@ -43,10 +42,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <RootNavigator />
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      </NavigationContainer>
+      <AudioPlayerProvider>
+        <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <RootNavigator />
+          <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        </NavigationContainer>
+      </AudioPlayerProvider>
     </SafeAreaProvider>
   );
 }

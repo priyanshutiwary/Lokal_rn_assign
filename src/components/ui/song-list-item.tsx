@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from './icon-symbol';
+import { FallbackImage } from './fallback-image';
 
 interface SongListItemProps {
     id: string;
@@ -28,7 +29,11 @@ export function SongListItem({
 
     return (
         <View className="flex-row items-center py-3">
-            <Image source={{ uri: image }} className="w-[60px] h-[60px] rounded-[20px] mr-4" contentFit="cover" />
+            <FallbackImage 
+                uri={image} 
+                fallbackIcon="music.note"
+                style={{ width: 60, height: 60, borderRadius: 20, marginRight: 16 }}
+            />
 
             <View className="flex-1 justify-center mr-2">
                 <Text className={`text-base font-bold mb-1 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>

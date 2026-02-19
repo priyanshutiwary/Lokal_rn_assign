@@ -103,9 +103,9 @@ export const getDownloadUrl = (downloadUrls: Array<{ quality: string; url?: stri
 };
 
 // Search APIs
-export const searchSongs = async (query: string, limit: number = 100): Promise<Song[]> => {
+export const searchSongs = async (query: string, limit: number = 100, page: number = 1): Promise<Song[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/search/songs?query=${encodeURIComponent(query)}&limit=${limit}`);
+    const response = await fetch(`${BASE_URL}/search/songs?query=${encodeURIComponent(query)}&limit=${limit}&page=${page}`);
     const data = await response.json();
     return data.data?.results || [];
   } catch (error) {
@@ -114,9 +114,9 @@ export const searchSongs = async (query: string, limit: number = 100): Promise<S
   }
 };
 
-export const searchAlbums = async (query: string, limit: number = 100): Promise<Album[]> => {
+export const searchAlbums = async (query: string, limit: number = 100, page: number = 1): Promise<Album[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/search/albums?query=${encodeURIComponent(query)}&limit=${limit}`);
+    const response = await fetch(`${BASE_URL}/search/albums?query=${encodeURIComponent(query)}&limit=${limit}&page=${page}`);
     const data = await response.json();
     return data.data?.results || [];
   } catch (error) {
@@ -125,9 +125,9 @@ export const searchAlbums = async (query: string, limit: number = 100): Promise<
   }
 };
 
-export const searchArtists = async (query: string, limit: number = 100): Promise<Artist[]> => {
+export const searchArtists = async (query: string, limit: number = 100, page: number = 1): Promise<Artist[]> => {
   try {
-    const response = await fetch(`${BASE_URL}/search/artists?query=${encodeURIComponent(query)}&limit=${limit}`);
+    const response = await fetch(`${BASE_URL}/search/artists?query=${encodeURIComponent(query)}&limit=${limit}&page=${page}`);
     const data = await response.json();
     return data.data?.results || [];
   } catch (error) {

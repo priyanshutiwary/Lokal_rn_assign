@@ -5,6 +5,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { LyricsModal } from '@/components/ui/lyrics-modal';
+import { FallbackImage } from '@/components/ui/fallback-image';
 import { RootStackParamList } from '@/navigation/types';
 import Slider from '@react-native-community/slider';
 import { usePlayerStore } from '@/store/player-store';
@@ -68,10 +70,10 @@ export default function PlayerScreen() {
 
         {/* Album Art */}
         <View className="items-center px-8 mt-4">
-          <Image
-            source={{ uri: albumArt }}
+          <FallbackImage
+            uri={albumArt}
+            fallbackIcon="music.note"
             style={{ width: 340, height: 340, borderRadius: 20 }}
-            resizeMode="cover"
           />
         </View>
 
@@ -228,10 +230,10 @@ export default function PlayerScreen() {
         {/* Lyrics Toggle */}
         <TouchableOpacity 
           className="items-center mt-8"
-          onPress={() => setShowLyrics(!showLyrics)}
+          onPress={() => setShowLyrics(true)}
         >
           <IconSymbol 
-            name={showLyrics ? 'chevron.down' : 'chevron.up'} 
+            name="text.quote" 
             size={20} 
             color={colorScheme === 'dark' ? 'white' : 'black'} 
           />
@@ -239,16 +241,16 @@ export default function PlayerScreen() {
             Lyrics
           </Text>
         </TouchableOpacity>
-
-        {showLyrics && (
-          <View className="px-8 mt-6">
-            <Text className={`text-center text-base leading-7 ${colorScheme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-              [Lyrics not available]{'\n\n'}
-              Lyrics will be displayed here when available from the music provider.
-            </Text>
-          </View>
-        )}
       </ScrollView>
+
+      {/* Lyrics Modal */}
+      <LyricsModal
+        visible={showLyrics}
+        onClose={() => setShowLyrics(false)}
+        songName={currentSong.name}
+        artistName={artistName}
+        lyrics={undefined} // TODO: Add lyrics API integration
+      />
     </SafeAreaView>
   );
 }

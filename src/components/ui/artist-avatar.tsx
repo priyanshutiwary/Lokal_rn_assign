@@ -4,8 +4,10 @@ import { Text, View } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { FallbackImage } from './fallback-image';
 
 interface ArtistAvatarProps {
+    id: string;
     image: string;
     name: string;
 }
@@ -16,7 +18,12 @@ export function ArtistAvatar({ image, name }: ArtistAvatarProps) {
 
     return (
         <View className="items-center mr-4 w-[120px]">
-            <Image source={{ uri: image }} className="w-[100px] h-[100px] rounded-full mb-2" />
+            <FallbackImage 
+                uri={image} 
+                fallbackIcon="person.circle"
+                rounded
+                style={{ width: 100, height: 100, borderRadius: 50, marginBottom: 8 }}
+            />
             <Text className={`text-sm font-semibold text-center ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>
                 {name}
             </Text>

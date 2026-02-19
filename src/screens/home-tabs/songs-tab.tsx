@@ -11,18 +11,20 @@ import { Song, getImageUrl } from '../../services/api';
 
 export function SongsTab() {
     const colorScheme = useColorScheme() ?? 'light';
-    const { songs, isLoading, fetchSongs } = useMusicStore();
+    const { songs, isLoading, isOffline, _hasHydrated, fetchSongs, loadMoreSongs, hasMore } = useMusicStore();
     const { playSong } = usePlayerStore();
     const [sortOption, setSortOption] = useState<SortOption>('Ascending');
     const [sortMenuVisible, setSortMenuVisible] = useState(false);
     const [optionsModalVisible, setOptionsModalVisible] = useState(false);
     const [selectedSong, setSelectedSong] = useState<any>(null);
+    const [searchQuery] = useState('trending hindi');
 
     useEffect(() => {
-        if (songs.length === 0) {
-            fetchSongs('trending hindi');
+        // Only fetch if hydration is complete and we have no cached data
+        if (_hasHydrated && songs.length === 0) {
+            fetchSongs(searchQuery);
         }
-    }, []);
+    }, [_hasHydrated]);
 
     const sortedData = useMemo(() => {
         return [...songs].sort((a, b) => {
@@ -60,12 +62,42 @@ export function SongsTab() {
         return (
             <View className="flex-1 items-center justify-center">
                 <ActivityIndicator size="large" color="#FF9500" />
+                {isOffline && (
+                    <Text className={`mt-4 text-center px-5 ${colorScheme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                        No cached songs available
+                    </Text>
+                )}
+            </View>
+        );
+    }
+
+    if (!isLoading && songs.length === 0) {
+        return (
+            <View className="flex-1 items-center justify-center px-5">
+                <IconSymbol name="music.note" size={64} color="#FF9500" />
+                <Text className={`mt-4 text-xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    No Songs Available
+                </Text>
+                <Text className={`mt-2 text-center ${colorScheme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {isOffline 
+                        ? 'No cached songs available. Connect to the internet to load songs.'
+                        : 'Unable to load songs. Please try again later.'}
+                </Text>
             </View>
         );
     }
 
     return (
         <View className="flex-1">
+            {/* Offline Indicator */}
+            {isOffline && (
+                <View className="bg-yellow-500 mx-5 mt-4 px-3 py-2 rounded-lg">
+                    <Text className="text-center text-sm font-semibold text-black">
+                        Offline - Showing cached songs
+                    </Text>
+                </View>
+            )}
+
             {/* Header */}
             <View className="flex-row justify-between items-center px-5 mt-4 mb-4">
                 <Text className={`text-xl font-bold ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`}>
@@ -97,6 +129,19 @@ export function SongsTab() {
                 )}
                 contentContainerClassName="px-5 pb-5"
                 showsVerticalScrollIndicator={false}
+                onEndReached={() => {
+                    if (hasMore.songs && !isLoading) {
+                        loadMoreSongs(searchQuery);
+                    }
+                }}
+                onEndReachedThreshold={0.5}
+                ListFooterComponent={
+                    isLoading && songs.length > 0 ? (
+                        <View className="py-4">
+                            <ActivityIndicator size="small" color="#FF9500" />
+                        </View>
+                    ) : null
+                }
             />
 
             {/* Modals */}

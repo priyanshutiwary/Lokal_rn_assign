@@ -19,7 +19,9 @@ export const MINI_PLAYER_HEIGHT = 76;
 export const BOTTOM_SAFE_AREA = TAB_BAR_HEIGHT + MINI_PLAYER_HEIGHT;
 
 function MainWithMiniPlayer() {
-  const { currentSong } = usePlayerStore();
+  const currentSong = usePlayerStore(state => state.currentSong);
+  
+  console.log('MainWithMiniPlayer render - currentSong:', currentSong?.name);
   
   return (
     <View style={styles.container}>

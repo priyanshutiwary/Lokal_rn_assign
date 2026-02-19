@@ -4,6 +4,7 @@ import { Text, View, TouchableOpacity } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { FallbackImage } from './fallback-image';
 
 interface HorizontalCardProps {
     image: string;
@@ -18,7 +19,11 @@ export function HorizontalCard({ image, title, subtitle, onPress }: HorizontalCa
 
     return (
         <TouchableOpacity className="w-[140px] mr-4" onPress={onPress} activeOpacity={0.7}>
-            <Image source={{ uri: image }} className="w-[140px] h-[140px] rounded-[20px] mb-2" />
+            <FallbackImage 
+                uri={image} 
+                fallbackIcon="music.note"
+                style={{ width: 140, height: 140, borderRadius: 20, marginBottom: 8 }}
+            />
             <Text className={`text-base font-bold mb-1 ${colorScheme === 'dark' ? 'text-white' : 'text-black'}`} numberOfLines={1}>
                 {title}
             </Text>
